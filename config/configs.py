@@ -17,22 +17,26 @@ def get_config():
     """
     Parameters Used:
     """
+
     parser = argparse.ArgumentParser(
         description="Coupled_RL", formatter_class=argparse.RawDescriptionHelpFormatter
     )
+
+    
+    # general parameters
+    parser.add_argument(
+        "--env_name",
+        type=str,
+        default="Synthetic",
+        help="Name of the environment."
+    )
+    
+    # operator parameters
     parser.add_argument(
          "--agents_num",
         type=int,
         default=4,
         help="Number of agents.",
     )
-    
-    parser.add_argument(
-        "--env_name",
-        type=str,
-        default="TBD",
-        help="Name of the environment."
-    )
-    
     
     return parser
