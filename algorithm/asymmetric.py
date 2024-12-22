@@ -15,9 +15,10 @@ import time
 import setproctitle
 
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 class Asymmetric:
-    def __init__(self, para, device):
+    def __init__(self, para, device, *args, **kwargs):
         """
         Constructor for Asymmetric
         """
@@ -141,127 +142,11 @@ class Asymmetric:
             # as the distributed setting, the agents can never over the range, so we do not need to concern than bother borders are overflow
             
             ### find the Q-value to update
-            index_tensor_kappa_o = torch.empty((0,), dtype=torch.int32, device=self.device)
-            if idx < self.kappa_o:
-                # Collect indices to add in a list
-                zero_pad_indices = [0] * (self.kappa_o - idx)  # List of zeros to append
-                # Convert to a tensor
-                pad_indices_tensor = torch.tensor(zero_pad_indices, dtype=torch.int32, device=self.device)
-                # Concatenate the new tensor to the existing tensor
-                index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, pad_indices_tensor))
-
-                # Handle reminders safely
-                reminders = self.kappa_o + idx + 1
-                index_copy = state_pre[:reminders]  # This remains a tensor
-                # Concatenate directly
-                index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, index_copy))
-
-                # The action part, in the same way
-                zero_pad_indices = [0] * (self.kappa_o - idx)  # List of zeros to append
-                # Convert to a tensor
-                pad_indices_tensor = torch.tensor(zero_pad_indices, dtype=torch.int32, device=self.device)
-                # Concatenate the new tensor to the existing tensor
-                index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, pad_indices_tensor))
-
-                # Handle action reminders safely
-                reminders = self.kappa_o + idx + 1
-                index_copy = action_pre[:reminders]  # This remains a tensor
-                # Concatenate directly
-                index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, index_copy))
-    
-            elif idx + self.kappa_o >= self.agents_num:
-                
-                index_copy = state_pre[idx-self.kappa_o:]
-                # Concatenate directly
-                index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, index_copy))
-                
-                zero_pad_indices = [0] * (self.kappa_o + idx + 1 - self.agents_num)
-                # Convert to a tensor
-                pad_indices_tensor = torch.tensor(zero_pad_indices, dtype=torch.int32, device=self.device)
-                # Concatenate the new tensor to the existing tensor
-                index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, pad_indices_tensor))
-                
-                
-                
-                index_copy = action_pre[idx-self.kappa_o:]
-                # Concatenate directly
-                index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, index_copy))
-                
-                
-                zero_pad_indices = [0] * (self.kappa_o + idx + 1 - self.agents_num)
-                # Convert to a tensor
-                pad_indices_tensor = torch.tensor(zero_pad_indices, dtype=torch.int32, device=self.device)
-                # Concatenate the new tensor to the existing tensor
-                index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, pad_indices_tensor))
-            
-            else:
-                index_copy = state_pre[idx-self.kappa_o:idx+self.kappa_o+1]
-                index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, index_copy))
-                
-                index_copy = action_pre[idx-self.kappa_o:idx+self.kappa_o+1]
-                index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, index_copy))
-        
+            indices_to_update = self.get_Q_indices(idx,state_pre,action_pre)
+           
             ### find the Q-value used for update
-            after_index_tensor_kappa_o = torch.empty((0,), dtype=torch.int32, device=self.device)
-            if idx < self.kappa_o:
-                # Collect indices to add in a list
-                zero_pad_indices = [0] * (self.kappa_o - idx)  # List of zeros to append
-                # Convert to a tensor
-                pad_indices_tensor = torch.tensor(zero_pad_indices, dtype=torch.int32, device=self.device)
-                # Concatenate the new tensor to the existing tensor
-                after_index_tensor_kappa_o = torch.cat((after_index_tensor_kappa_o, pad_indices_tensor))
-
-                # Handle reminders safely
-                reminders = self.kappa_o + idx + 1
-                index_copy = state_current[:reminders]  # This remains a tensor
-                # Concatenate directly
-                after_index_tensor_kappa_o = torch.cat((after_index_tensor_kappa_o, index_copy))
-
-                # The action part, in the same way
-                zero_pad_indices = [0] * (self.kappa_o - idx)  # List of zeros to append
-                # Convert to a tensor
-                pad_indices_tensor = torch.tensor(zero_pad_indices, dtype=torch.int32, device=self.device)
-                # Concatenate the new tensor to the existing tensor
-                after_index_tensor_kappa_o = torch.cat((after_index_tensor_kappa_o, pad_indices_tensor))
-
-                # Handle action reminders safely
-                reminders = self.kappa_o + idx + 1
-                index_copy = action_current[:reminders]  # This remains a tensor
-                # Concatenate directly
-                after_index_tensor_kappa_o = torch.cat((after_index_tensor_kappa_o, index_copy))
-    
-            elif idx + self.kappa_o >= self.agents_num:
-                
-                index_copy = state_current[idx-self.kappa_o:]
-                # Concatenate directly
-                after_index_tensor_kappa_o = torch.cat((after_index_tensor_kappa_o, index_copy))
-                
-                zero_pad_indices = [0] * (self.kappa_o + idx + 1 - self.agents_num)
-                # Convert to a tensor
-                pad_indices_tensor = torch.tensor(zero_pad_indices, dtype=torch.int32, device=self.device)
-                # Concatenate the new tensor to the existing tensor
-                after_index_tensor_kappa_o = torch.cat((after_index_tensor_kappa_o, pad_indices_tensor))
-                
-                
-                
-                index_copy = action_current[idx-self.kappa_o:]
-                # Concatenate directly
-                after_index_tensor_kappa_o = torch.cat((after_index_tensor_kappa_o, index_copy))
-                
-                
-                zero_pad_indices = [0] * (self.kappa_o + idx + 1 - self.agents_num)
-                # Convert to a tensor
-                pad_indices_tensor = torch.tensor(zero_pad_indices, dtype=torch.int32, device=self.device)
-                # Concatenate the new tensor to the existing tensor
-                after_index_tensor_kappa_o = torch.cat((after_index_tensor_kappa_o, pad_indices_tensor))
-            
-            else:
-                index_copy = state_current[idx-self.kappa_o:idx+self.kappa_o+1]
-                after_index_tensor_kappa_o = torch.cat((after_index_tensor_kappa_o, index_copy))
-                
-                index_copy = action_current[idx-self.kappa_o:idx+self.kappa_o+1]
-                after_index_tensor_kappa_o = torch.cat((after_index_tensor_kappa_o, index_copy))
-            
+            indices_used_for_update = self.get_Q_indices(idx,state_current,action_current)
+                        
             # incase of be in the same state and cause multiple update, we clone the origin Q tale
             Q_table_pre = self.Q_table_init.clone()
             
@@ -274,25 +159,139 @@ class Asymmetric:
                 else:
                     reward_term += reward_pre[idx_r]
                     
-            # Convert idx to a tensor with one element
-            idx_tensor = torch.tensor([idx], device=self.device)  # Convert idx to a tensor of shape (1,)
-
-            # Concatenate the tensors
-            indices_to_update = tuple(torch.cat((idx_tensor, index_tensor_kappa_o)))
             
-            indices_used_for_update = tuple(torch.cat((idx_tensor,after_index_tensor_kappa_o)))
             
             self.Q_table_init[indices_to_update] = (1 - alpha) * Q_table_pre[indices_to_update] + alpha * \
                 (1 / self.agents_num * reward_term + self.gamma * Q_table_pre[indices_used_for_update])
             
-            
-            
+    def get_Q_indices(self, idx, state_tensor,action_tensor):
+        index_tensor_kappa_o = torch.empty((0,), dtype=torch.int32, device=self.device)
+        if idx < self.kappa_o:
+            # Collect indices to add in a list
+            zero_pad_indices = [0] * (self.kappa_o - idx)  # List of zeros to append
+            # Convert to a tensor
+            pad_indices_tensor = torch.tensor(zero_pad_indices, dtype=torch.int32, device=self.device)
+            # Concatenate the new tensor to the existing tensor
+            index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, pad_indices_tensor))
 
+            # Handle reminders safely
+            reminders = self.kappa_o + idx + 1
+            index_copy = state_tensor[:reminders]  # This remains a tensor
+            # Concatenate directly
+            index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, index_copy))
+
+            # The action part, in the same way
+            zero_pad_indices = [0] * (self.kappa_o - idx)  # List of zeros to append
+            # Convert to a tensor
+            pad_indices_tensor = torch.tensor(zero_pad_indices, dtype=torch.int32, device=self.device)
+            # Concatenate the new tensor to the existing tensor
+            index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, pad_indices_tensor))
+
+            # Handle action reminders safely
+            reminders = self.kappa_o + idx + 1
+            index_copy = action_tensor[:reminders]  # This remains a tensor
+            # Concatenate directly
+            index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, index_copy))
+
+        elif idx + self.kappa_o >= self.agents_num:
             
+            index_copy = state_tensor[idx-self.kappa_o:]
+            # Concatenate directly
+            index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, index_copy))
+            
+            zero_pad_indices = [0] * (self.kappa_o + idx + 1 - self.agents_num)
+            # Convert to a tensor
+            pad_indices_tensor = torch.tensor(zero_pad_indices, dtype=torch.int32, device=self.device)
+            # Concatenate the new tensor to the existing tensor
+            index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, pad_indices_tensor))
+            
+            
+            
+            index_copy = action_tensor[idx-self.kappa_o:]
+            # Concatenate directly
+            index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, index_copy))
+            
+                        
+            zero_pad_indices = [0] * (self.kappa_o + idx + 1 - self.agents_num)
+            # Convert to a tensor
+            pad_indices_tensor = torch.tensor(zero_pad_indices, dtype=torch.int32, device=self.device)
+            # Concatenate the new tensor to the existing tensor
+            index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, pad_indices_tensor))
+        
+        else:
+            index_copy = state_tensor[idx-self.kappa_o:idx+self.kappa_o+1]
+            index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, index_copy))
+            
+            index_copy = action_tensor[idx-self.kappa_o:idx+self.kappa_o+1]
+            index_tensor_kappa_o = torch.cat((index_tensor_kappa_o, index_copy))
+        # Convert idx to a tensor with one element
+        idx_tensor = torch.tensor([idx], device=self.device)  # Convert idx to a tensor of shape (1,)
+
+        # Concatenate the tensors
+        indices_in_Q_tensor = tuple(torch.cat((idx_tensor, index_tensor_kappa_o)))    
+        
+        return indices_in_Q_tensor
+            
+        
+
+        
                 
     
-    def update_policy(self):
-        pass
+    def update_policy(self,episode):
+        
+        ### check the data collection, in case of wrong info
+        assert self.steps_num == self.data_dict["state"].size(0), (
+            f"Mismatch in step count: expected {self.steps_num}, but found {self.data_dict["state"]} in data_dict['state']."
+        )
+        
+        assert self.steps_num == self.data_dict["action"].size(0), (
+            f"Mismatch in step count: expected {self.steps_num}, but found {self.data_dict["state"]} in data_dict['state']."
+        )
+        
+        assert self.steps_num == self.data_dict["reward"].size(0), (
+            f"Mismatch in step count: expected {self.steps_num}, but found {self.data_dict["state"]} in data_dict['state']."
+        )
+        
+        ###
+        
+        eta_m = self.eta / torch.sqrt(torch.tensor(episode + 1, dtype=torch.float32, device=self.device))
+
+        
+        ### update the the paramters theta, self.policy_para_tensor
+        for idx_step in range(self.steps_num):
+            # access to the states and actions
+            global_state = self.data_dict["state"][idx_step]
+            global_action = self.data_dict["action"][idx_step]
+            # update the parameters for each agents
+            for idx in range(self.agents_num):
+                
+                # get the currespond Q value in the Q table
+                Q_index = self.get_Q_indices(idx,global_state, global_action)
+                
+                # get the policy paramters to be updated
+                theta_update_index = tuple([idx,int(global_state[idx])])
+                
+                # avoid potential self update error
+                policy_para_temp = self.policy_para_tensor[theta_update_index].clone()
+                policy_para_temp.requires_grad_()  # Set requires_grad to True
+                
+                ### update the corresponding parameters one by one
+                # gradient term
+                pi_for_update = torch.softmax(policy_para_temp, dim=0)
+                
+                # log pi
+                log_pi_for_update = torch.log(pi_for_update[int(global_action[idx])])
+                
+                # nabla log pi
+                log_pi_for_update.backward()
+                
+                # update the policy
+                self.policy_para_tensor[theta_update_index] += eta_m * self.gamma**idx_step * self.Q_table_init[Q_index] * policy_para_temp.grad
+                
+                
+
+    
+    
     
     # get actions use softmax when training and greedy when execution, contains the following three functions
     def get_action(self, agents_state):
@@ -305,6 +304,7 @@ class Asymmetric:
     
     def softmax_policy(self,agents_state):
         
+        # initialize an action
         actions = self.actions_init.clone()
         
         for i in range(self.agents_num):
@@ -318,16 +318,58 @@ class Asymmetric:
             
     
     def greedy_policy(self,agents_state):
+        
+        # initialize an action
         actions = self.actions_init.clone()
         
         for i in range(self.agents_num):
-            greedy_action = torch.argmax(agents_state[i].to(torch.int)).item()
-            actions[i] = greedy_action
+            policy_logits = self.policy_para_tensor[i]
+            
+            # greedy action: only take the action with the greatest chosen probability
+            greedy_action = torch.argmax(policy_logits[agents_state[i].to(torch.int)]).item()
+            actions[i] = bool(greedy_action)
         return actions
 
     
+    def plot_episodic_return(self,save_path,episodic_return_save):
+        
+        # Get the current runtime (time elapsed since epoch)
+        run_time = time.strftime("%Y%m%d-%H%M%S")
+        
+        # Set the process title (for display in system)
+        setproctitle.setproctitle(f"training-{run_time}")
+        
+        # Create folder path with "results" and the run time
+        folder_path = os.path.join(save_path, "final" + run_time)
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        
+        # Define the full path to the file, including the filename
+        file_path = os.path.join(folder_path, "episodic_return_plot.png")
+        
+        # Assuming episodic_return_save is a tensor on CUDA (GPU)
+        episodic_return_save = episodic_return_save.cpu()  # Move tensor to CPU
+
+        # Convert the tensor to a NumPy array
+        episodic_return_save  = episodic_return_save.squeeze().numpy()  # Squeeze removes the singleton dimension
+
+        
+        # Plot the data
+        plt.plot(episodic_return_save)
+        plt.xlabel('Episodes')  # Label for the x-axis
+        plt.ylabel('Return')  # Label for the y-axis
+        plt.title('Epicodic Return')  # Title of the plot
+        plt.savefig(file_path)
+
+        # Display the plot
+        plt.show()
+        
+
+        print(f"Plot saved to: {file_path}")
+                        
     
-    def save_model(self, save_path):
+    
+    def save_model(self, save_path,episodic_return_save):
         # Get the current runtime (time elapsed since epoch)
         run_time = time.strftime("%Y%m%d-%H%M%S")
         
@@ -344,5 +386,10 @@ class Asymmetric:
         
         # Save the tensor to the file path
         torch.save(self.policy_para_tensor, file_path)
+        
+        file_path = os.path.join(folder_path, "episodic_return.pt")
+        
+        # Save the tensor to the file path
+        torch.save(episodic_return_save, file_path)
 
         tqdm.write(f"Model saved to {file_path}")

@@ -96,6 +96,9 @@ def train():
     folder_path, main_folder = create_results_folder()
   
     
+    ### Used for record variables
+    episodic_return_save = torch.empty(0, dtype=torch.float64,device=device)
+    
     # training progress
     for episode in trange(para.episode_num):
         # reset the enrironment
@@ -105,6 +108,9 @@ def train():
         policy.clear_data_buffer()
         
 
+        # used for calculate episodic return
+        episodic_return = torch.tensor([0],dtype=torch.float32,device=device)
+        
         for step in range(para.steps_num):
             
             # save the state of current env
@@ -117,14 +123,20 @@ def train():
 
             reward = env.step(actions)
             
+            episodic_return += policy.gamma**step * torch.sum(reward)
+            
             # save reward correspond to env
             policy.save_reward(reward)
             
             if step > 0:
                 # update Q when t>0
                 policy.update_Q_table(step)
+        # record episodic return
+        episodic_return_save = torch.cat((episodic_return_save, episodic_return), dim=0)
+
         
-        policy.update_policy()
+        
+        policy.update_policy(episode)
         
         
             
@@ -135,7 +147,8 @@ def train():
             tqdm.write(f"Saved tensor for episode {episode+1} to {episodic_save_path}")    
     
     
-    policy.save_model(main_folder)
+    policy.save_model(main_folder,episodic_return_save)
+    policy.plot_episodic_return(main_folder,episodic_return_save)
     
     
     

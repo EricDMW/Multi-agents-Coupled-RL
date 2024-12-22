@@ -35,7 +35,7 @@ def get_config():
     parser.add_argument(
         "--episode_num",
         type=int,
-        default=int(1e2),
+        default=int(1e4),
         help="number of training episodes",
     )
     
@@ -87,7 +87,7 @@ def get_config():
     parser.add_argument(
         "--gamma",
         type=float,
-        default=0.99,
+        default=0.9,
         help="discount factor"
     )
     
@@ -108,7 +108,7 @@ def get_config():
     parser.add_argument(
         "--steps_num",
         type=int,
-        default=int(1e1),
+        default=int(2e2),
         help="lenth of runing steps of each episode"
     )
     
@@ -129,13 +129,13 @@ def get_config():
     parser.add_argument(
         "--h",
         type=float,
-        default=0.1,
+        default=1e-2,
         help="step size prameter h"
     )
     parser.add_argument(
         "--eta",
         type=float,
-        default=0.1,
+        default=1e-4,
         help="step size prameter eta"
     )
     parser.add_argument(

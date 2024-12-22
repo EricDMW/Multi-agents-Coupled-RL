@@ -18,15 +18,15 @@ import torch
 
 import torch
 
-# Tensor a with indices (each row represents an index into b)
-a = torch.tensor([1, 2, 3])
+# Assume self.policy_para_tensor is a 2D tensor
+policy_para_tensor = torch.tensor([[1, 2, 3], [4, 5, 6]])
 
-# Tensor b (5x5x5 tensor)
-b = torch.arange(5*5*5).reshape(5, 5, 5)
+# Take a view from self.policy_para_tensor
+theta_to_update = policy_para_tensor[0, 1]  # This will be 2
 
-# Use a to index into b and retrieve the values at the specified indices
-result = b[a[ 0], a[1], a[2]]
+# Modify the view
+theta_to_update = 10
 
-print("Tensor b:\n", b)
-print("Indices in a:\n", a)
-print("Values at the indices:\n", result)
+# Now self.policy_para_tensor will also reflect this change
+print(policy_para_tensor)
+

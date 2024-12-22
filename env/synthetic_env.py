@@ -12,7 +12,7 @@
 import torch
 
 class SyntheticEnv():
-    def __init__(self, para, device):
+    def __init__(self, para, device, *args, **kwargs):
         """
         Initialize the SyntheticEnv():.
         """
