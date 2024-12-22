@@ -15,6 +15,7 @@ import torch
 import os
 import setproctitle
 import tqdm
+import time
 
 from pathlib import Path
 from tqdm import tqdm, trange
@@ -25,10 +26,53 @@ sys.path.append(str(parents_path))
 
 # parameters 
 from config import get_config
-from utils.device_setting import get_device
+from utils import get_device, set_seed
 
 from asymmetric import Asymmetric
 from env import SyntheticEnv
+
+### Training preparation: parameters and device setting
+def initialize_para():
+     
+    # set the running device
+    device = get_device()
+    
+    # parser parameters
+    parser = get_config()
+    para = parser.parse_args()
+    
+    # set the seed
+    if para.fix_seed:
+        try:
+            set_seed(para.rand_seed)
+            print(f"Seed set to {para.rand_seed} for reproducibility.")
+        except ValueError as e:
+            print(f"Error: {e}")
+    else:
+        print("Seed is not fixed.")
+    return device, para
+
+# Function to set the folder name dynamically using the runtime
+def create_results_folder():
+    # Define the main folder path
+    main_folder = "results"
+    
+    # Check if the main folder exists, if not, create it
+    if not os.path.exists(main_folder):
+        os.makedirs(main_folder)
+    
+    # Get the current runtime (time elapsed since epoch)
+    run_time = time.strftime("%Y%m%d-%H%M%S")
+    
+    # Set the process title (for display in system)
+    setproctitle.setproctitle(f"training-{run_time}")
+    
+    # Create folder path with "results" and the run time
+    folder_path = os.path.join(main_folder, run_time)
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    
+    return folder_path, main_folder
 
 def train():
     """
@@ -37,14 +81,9 @@ def train():
     ### Training preparation: parameters and device setting
     
     # set the running device
-    device = get_device()
-    
-    # parser parameters
-    parser = get_config()
-    para = parser.parse_args()
-    
-    # buid the environment
-    
+    device, para = initialize_para()
+            
+    ### buid the environment
     
     # initialize the policy
     policy = Asymmetric(para,device)
@@ -53,16 +92,50 @@ def train():
     env = SyntheticEnv(para,device)
     
     
+    ### Create folder for saving the results
+    folder_path, main_folder = create_results_folder()
+  
+    
     # training progress
-    for _ in trange(para.episode_num):
-        
+    for episode in trange(para.episode_num):
+        # reset the enrironment
         env.reset()
         
-        for _ in range(para.steps_num):
-            actions = torch.zeros(size=(para.agents_num, ), device=device, dtype=torch.bool)
-            env.step(actions)
+        # empty the data saver when start a new episode
+        policy.clear_data_buffer()
+        
+
+        for step in range(para.steps_num):
+            
+            # save the state of current env
+            policy.save_state(env.agent_state)
+            
+            actions = policy.get_action(env.agent_state)
+            
+            # save actions correspond to env
+            policy.save_action(actions)
+
+            reward = env.step(actions)
+            
+            # save reward correspond to env
+            policy.save_reward(reward)
+            
+            if step > 0:
+                # update Q when t>0
+                policy.update_Q_table(step)
+        
+        policy.update_policy()
+        
+        
+            
+        # save the procedure model incase of loss connection    
+        if (episode + 1) % para.save_frequency == 0:
+            episodic_save_path = os.path.join(folder_path, f"episode_{episode+1}_tensor.pt")
+            torch.save(policy.policy_para_tensor, episodic_save_path)
+            tqdm.write(f"Saved tensor for episode {episode+1} to {episodic_save_path}")    
     
-    policy.save_model()
+    
+    policy.save_model(main_folder)
     
     
     

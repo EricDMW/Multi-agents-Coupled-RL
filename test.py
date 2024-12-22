@@ -9,13 +9,24 @@
 @Time   : 20:21:33
 @Info   : Description of the script
 """
-from config import get_config
+import torch
+import pandas as pd
+import numpy as np
 
-def main():
-   parser = get_config().parse_args()
-   parser.agents_num
-   
-   
+import torch
 
-if __name__ == '__main__':
-    main()
+
+import torch
+
+# Tensor a with indices (each row represents an index into b)
+a = torch.tensor([1, 2, 3])
+
+# Tensor b (5x5x5 tensor)
+b = torch.arange(5*5*5).reshape(5, 5, 5)
+
+# Use a to index into b and retrieve the values at the specified indices
+result = b[a[ 0], a[1], a[2]]
+
+print("Tensor b:\n", b)
+print("Indices in a:\n", a)
+print("Values at the indices:\n", result)

@@ -38,8 +38,7 @@ class SyntheticEnv():
         assert self.agent_state.size() == actions.size(), \
             f"Action sizes mismatch: state size {self.agent_state.size()} vs action size {actions.size()}"
         
-        # record the old state for potential usage
-        pre_state = self.agent_state.copy
+        
         
         # update the state of agent 1
         if self.agent_state[1]:
@@ -67,9 +66,9 @@ class SyntheticEnv():
         else:
             self.agent_state[-1] = False
         
-        new_state = self.agent_state
+        # new_state = self.agent_state
         reward = self.get_reward()
-        return pre_state, new_state, reward
+        return reward
             
         
             

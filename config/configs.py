@@ -35,8 +35,21 @@ def get_config():
     parser.add_argument(
         "--episode_num",
         type=int,
-        default=200,
+        default=int(1e2),
         help="number of training episodes",
+    )
+    
+    parser.add_argument(
+        "--is_training",
+        type=bool,
+        default=True,
+        help="determine use stochatic policy (training) or greedy policy (execution)"
+    )
+    parser.add_argument(
+        "--save_frequency",
+        type=int,
+        default=100,
+        help="save the model during training process"
     )
 
     
@@ -56,6 +69,19 @@ def get_config():
         help="The transition probability of agents 2->n-1 when s_i+1 = 0, a_i = 1"
     )
 
+    parser.add_argument(
+        "--state_space_size",
+        type=int,
+        default=2,
+        help="size of the state space of each agents"
+    )
+    
+    parser.add_argument(
+        "--action_space_size",
+        type=int,
+        default=2,
+        help="action space size of each agents"
+    )
     
     # algorithm setting parameters
     parser.add_argument(
@@ -66,7 +92,14 @@ def get_config():
     )
     
     parser.add_argument(
-        "--kappa",
+        "--kappa_o",
+        type = int,
+        default=1,
+        help="Order of neighbors used"
+    )
+    
+    parser.add_argument(
+        "--kappa_r",
         type = int,
         default=1,
         help="Order of neighbors used"
@@ -75,8 +108,42 @@ def get_config():
     parser.add_argument(
         "--steps_num",
         type=int,
-        default=50,
+        default=int(1e1),
         help="lenth of runing steps of each episode"
     )
+    
+    parser.add_argument(
+        "--rand_seed",
+        type=int,
+        default=1,
+        help="the random seed for torch"
+    )
+    
+    parser.add_argument(
+        "--fix_seed",
+        type=bool,
+        default=True,
+        help="use fixed random seed or not"
+    )
+    
+    parser.add_argument(
+        "--h",
+        type=float,
+        default=0.1,
+        help="step size prameter h"
+    )
+    parser.add_argument(
+        "--eta",
+        type=float,
+        default=0.1,
+        help="step size prameter eta"
+    )
+    parser.add_argument(
+        "--t_0",
+        type=int,
+        default=5,
+        help="step size prameter t_0"
+    )
+        
     
     return parser
