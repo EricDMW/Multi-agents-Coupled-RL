@@ -31,12 +31,52 @@ def get_config():
         help="Name of the environment."
     )
     
-    # operator parameters
+    # training parameters
     parser.add_argument(
-         "--agents_num",
+        "--episode_num",
         type=int,
-        default=4,
+        default=200,
+        help="number of training episodes",
+    )
+
+    
+    
+    # parameters
+    parser.add_argument(
+        "--agents_num",
+        type=int,
+        default=12,
         help="Number of agents.",
+    )
+    
+    parser.add_argument(
+        "--trans_prob",
+        type=float,
+        default=0.8,
+        help="The transition probability of agents 2->n-1 when s_i+1 = 0, a_i = 1"
+    )
+
+    
+    # algorithm setting parameters
+    parser.add_argument(
+        "--gamma",
+        type=float,
+        default=0.99,
+        help="discount factor"
+    )
+    
+    parser.add_argument(
+        "--kappa",
+        type = int,
+        default=1,
+        help="Order of neighbors used"
+    )
+    
+    parser.add_argument(
+        "--steps_num",
+        type=int,
+        default=50,
+        help="lenth of runing steps of each episode"
     )
     
     return parser

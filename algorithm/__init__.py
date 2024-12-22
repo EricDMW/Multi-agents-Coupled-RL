@@ -10,4 +10,6 @@
 @Info   : Portal of algorithm
 """
 
+from .train import train
+from .asymmetric import Asymmetric
 
