@@ -76,7 +76,7 @@ def create_results_folder():
 
 def train():
     """
-    Description of the function train.
+    Main function, used for training.
     """
     ### Training preparation: parameters and device setting
     
