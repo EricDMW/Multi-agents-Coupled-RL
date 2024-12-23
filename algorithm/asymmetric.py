@@ -70,7 +70,7 @@ class Asymmetric:
         self.data_dict = {
             "state": torch.tensor([], dtype=torch.bool, device=device),  # Empty tensor for state
             "action": torch.tensor([], dtype=torch.bool, device=device),  # Empty tensor for action
-            "reward": torch.tensor([], dtype=torch.bool, device=device)  # Empoty tensor for reward
+            "reward": torch.tensor([], dtype=torch.bool, device=device)  # Empty tensor for reward
         }           
 
         
@@ -118,7 +118,7 @@ class Asymmetric:
         self.data_dict = {
             "state": torch.tensor([], dtype=torch.bool, device=self.device),  # Empty tensor for state
             "action": torch.tensor([], dtype=torch.bool, device=self.device),  # Empty tensor for action
-            "reward": torch.tensor([], dtype=torch.bool, device=self.device)  # Empoty tensor for reward
+            "reward": torch.tensor([], dtype=torch.bool, device=self.device)  # Empty tensor for reward
         }  
     
     

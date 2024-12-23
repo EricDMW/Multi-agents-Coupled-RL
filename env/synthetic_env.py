@@ -38,10 +38,11 @@ class SyntheticEnv():
         assert self.agent_state.size() == actions.size(), \
             f"Action sizes mismatch: state size {self.agent_state.size()} vs action size {actions.size()}"
         
-        
+        # avoiding multiple update
+        agent_state_pre = self.agent_state.clone()
         
         # update the state of agent 1
-        if self.agent_state[1]:
+        if agent_state_pre[1]:
             self.agent_state[0] = True
         else:
             self.agent_state[0] = False
@@ -50,11 +51,10 @@ class SyntheticEnv():
         for idx in range(1,self.agent_num-1):
             
             # case 1: when s_{i+1} = 1, a_i = 1, the s_i(t+1) = 1
-            # Explaination: here we do not need to worry about duplicated update because the states of agents i only related to i+1 here
-            # to make it right, we can only update it from left to right
-            if self.agent_state[idx+1] and actions[idx]:
+            
+            if agent_state_pre[idx+1] and actions[idx]:
                 self.agent_state[idx] = True
-            elif not self.agent_state[idx+1] and actions[idx]:
+            elif not agent_state_pre[idx+1] and actions[idx]:
                 self.agent_state[idx] = self.stochastic_state()
             else:
                 self.agent_state[idx] = False

@@ -123,19 +123,21 @@ def train():
 
             reward = env.step(actions)
             
-            episodic_return += policy.gamma**step * torch.sum(reward)
-            
             # save reward correspond to env
             policy.save_reward(reward)
+            
+            # calculate episodic return
+            episodic_return += policy.gamma**step * torch.sum(reward)
+            
+            
             
             if step > 0:
                 # update Q when t>0
                 policy.update_Q_table(step)
+                
         # record episodic return
         episodic_return_save = torch.cat((episodic_return_save, episodic_return), dim=0)
 
-        
-        
         policy.update_policy(episode)
         
         
