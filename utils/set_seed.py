@@ -30,4 +30,5 @@ def set_seed(seed):
     # For reproducibility with CUDA
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+    print(f"seed is fixed with value {seed}")
 

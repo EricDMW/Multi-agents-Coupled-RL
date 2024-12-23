@@ -24,6 +24,10 @@ from tqdm import tqdm, trange
 parents_path = Path(__file__).parents[1]
 sys.path.append(str(parents_path))
 
+current_level_path = Path(__file__).parents[0]
+sys.path.append(str(current_level_path))
+
+
 # parameters 
 from config import get_config
 from utils import get_device, set_seed
@@ -45,7 +49,7 @@ def initialize_para():
     if para.fix_seed:
         try:
             set_seed(para.rand_seed)
-            print(f"Seed set to {para.rand_seed} for reproducibility.")
+            # print(f"Seed set to {para.rand_seed} for reproducibility.")
         except ValueError as e:
             print(f"Error: {e}")
     else:

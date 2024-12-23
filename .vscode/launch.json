@@ -8,8 +8,8 @@
             "name": "Python Debugger: Current File",
             "type": "debugpy",
             "request": "launch",
-            // "program": "${file}",
-            "program": "${workspaceFolder}/algorithm/train.py", // Path to train.py
+            "program": "${file}",
+            // "program": "${workspaceFolder}/algorithm/train.py", // Path to train.py
             "console": "integratedTerminal"
         }
     ]

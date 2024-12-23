@@ -10,6 +10,9 @@
 @Info   : Portal of algorithm
 """
 
-from .train import train
+from .train import train, initialize_para, create_results_folder
+
+
 from .asymmetric import Asymmetric
+
 
