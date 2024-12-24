@@ -69,7 +69,7 @@ def create_results_folder():
     
     return folder_path, main_folder
 
-def train():
+def train(seed=1, kappa_o=1):
     """
     Main function, used for training.
     """
@@ -77,7 +77,10 @@ def train():
     
     # set the running device
     device, para = initialize_para()
-    
+    # change with different seeeds for running
+    para.rand_seed = seed
+    # change the kappa_o
+    para.kappa_o = kappa_o
     ### Choose to set the seed or not
     # set the seed
     if para.fix_seed:
@@ -88,6 +91,9 @@ def train():
             print(f"Error: {e}")
     else:
         print("Seed is not fixed.")
+        
+    # double check 
+    print(f"current seed {para.rand_seed}, kappa_o {para.kappa_o}")
     
     ### buid the environment
     
@@ -150,10 +156,20 @@ def train():
             
         # save the procedure model incase of loss connection    
         if (episode + 1) % para.save_frequency == 0:
-            episodic_save_path = os.path.join(folder_path, f"episode_{episode+1}_kappa_o_{policy.kappa_o}_kappa_r_{policy.kappa_r}_tensor.pt")
+            # path to record the model
+            episodic_save_path = os.path.join(folder_path, f"episode_{episode+1}_kappa_o_{policy.kappa_o}_kappa_r_{policy.kappa_r}_seed_{seed}_tensor.pt")
+            # path to record the episodic return
+            episodic_return_save_path = os.path.join(folder_path, f"episodic_return_episode_{episode+1}_kappa_o_{policy.kappa_o}\
+                _kappa_r_{policy.kappa_r}_seed_{seed}_tensor.pt")
             
+            # plot current episodic return
             policy.plot_episodic_return(folder_path, episodic_return_save, episode)
+            
+            # save model
             torch.save(policy.policy_para_tensor, episodic_save_path)
+            
+            # save current episodic return
+            torch.save(episodic_return_save, episodic_return_save_path)
             tqdm.write(f"Saved tensor for episode {episode+1} to {episodic_save_path}")    
     
     
@@ -164,4 +180,14 @@ def train():
     
 
 if __name__ == "__main__":
-    train()
+    
+    kappa_os = [1,2,3,4]
+    seeds = [1, 5, 20, 40, 80, 100]
+    
+    for kappa_o in kappa_os:
+        train(seed=1,kappa_o=kappa_o)
+    
+    for seed in seeds:
+        train(seed=seed,kappa_o=1)
+    
+    

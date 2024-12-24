@@ -11,3 +11,4 @@
 
 from .device_setting import get_device
 from .set_seed import set_seed
+from .figures import plot_toolbox

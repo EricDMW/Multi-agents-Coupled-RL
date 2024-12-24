@@ -106,7 +106,7 @@ def get_config():
     parser.add_argument(
         "--fix_seed",
         type=bool,
-        default=False,
+        default=True,
         help="use fixed random seed or not"
     )
     
@@ -115,17 +115,17 @@ def get_config():
     parser.add_argument(
         "--h",
         type=float,
-        default=3,
+        default=2,
         # performance tested: the leftmost is current testing one, the rest part ordered by performance
-        choices=[1,3],
+        choices=[2,1,3],
         help="step size prameter h"
     )
     parser.add_argument(
         "--eta",
         type=float,
-        default=3,
+        default=2,
         # performance tested: the leftmost is current testing one, the rest part ordered by performance
-        choices=[1,3],
+        choices=[2,1,3],
         help="step size prameter eta"
     )
     parser.add_argument(
@@ -138,20 +138,20 @@ def get_config():
     parser.add_argument(
         "--steps_num",
         type=int,
-        default=int(4e3),
+        default=int(1e3),
         help="lenth of runing steps of each episode"
     )
     
     parser.add_argument(
         "--episode_num",
         type=int,
-        default=int(2e4),
+        default=int(1e3),
         help="number of training episodes",
     )
     parser.add_argument(
         "--save_frequency",
         type=int,
-        default=1000,
+        default=100,
         help="save the model during training process"
     )   
     
