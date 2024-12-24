@@ -32,12 +32,6 @@ def get_config():
     )
     
     # training parameters
-    parser.add_argument(
-        "--episode_num",
-        type=int,
-        default=int(1e2),
-        help="number of training episodes",
-    )
     
     parser.add_argument(
         "--is_training",
@@ -45,12 +39,7 @@ def get_config():
         default=True,
         help="determine use stochatic policy (training) or greedy policy (execution)"
     )
-    parser.add_argument(
-        "--save_frequency",
-        type=int,
-        default=100,
-        help="save the model during training process"
-    )
+    
 
     
     
@@ -87,7 +76,7 @@ def get_config():
     parser.add_argument(
         "--gamma",
         type=float,
-        default=0.7,
+        default=0.8,
         help="discount factor"
     )
     
@@ -105,12 +94,7 @@ def get_config():
         help="Order of neighbors used"
     )
     
-    parser.add_argument(
-        "--steps_num",
-        type=int,
-        default=int(1e2),
-        help="lenth of runing steps of each episode"
-    )
+    
     
     parser.add_argument(
         "--rand_seed",
@@ -126,16 +110,22 @@ def get_config():
         help="use fixed random seed or not"
     )
     
+    
+    # frequently used parameters
     parser.add_argument(
         "--h",
         type=float,
-        default=1e-2,
+        default=3,
+        # performance tested: the leftmost is current testing one, the rest part ordered by performance
+        choices=[1,3],
         help="step size prameter h"
     )
     parser.add_argument(
         "--eta",
         type=float,
-        default=1e-4,
+        default=3,
+        # performance tested: the leftmost is current testing one, the rest part ordered by performance
+        choices=[1,3],
         help="step size prameter eta"
     )
     parser.add_argument(
@@ -144,6 +134,25 @@ def get_config():
         default=5,
         help="step size prameter t_0"
     )
-        
+    
+    parser.add_argument(
+        "--steps_num",
+        type=int,
+        default=int(4e3),
+        help="lenth of runing steps of each episode"
+    )
+    
+    parser.add_argument(
+        "--episode_num",
+        type=int,
+        default=int(2e4),
+        help="number of training episodes",
+    )
+    parser.add_argument(
+        "--save_frequency",
+        type=int,
+        default=1000,
+        help="save the model during training process"
+    )   
     
     return parser

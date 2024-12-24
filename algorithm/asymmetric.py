@@ -40,7 +40,7 @@ class Asymmetric:
         self.kappa_r = para.kappa_r
         self.steps_num = para.steps_num
         
-        # initialize the Q talbe with all 0
+        ### initialize the Q talbe with all 0 Q(i,s_{N_i},a_{N_i})
         # potential limitation: in torch the dimension of all elements must be homogeneous, so it may be infreasible when dealing with inhomogeneous situation
         self.Q_table_init = torch.zeros(
             size=(self.agents_num,),
@@ -331,7 +331,7 @@ class Asymmetric:
         return actions
 
     
-    def plot_episodic_return(self,save_path,episodic_return_save):
+    def plot_episodic_return(self,save_path,episodic_return_save,episode,if_final=False):
         
         # Get the current runtime (time elapsed since epoch)
         run_time = time.strftime("%Y%m%d-%H%M%S")
@@ -340,12 +340,17 @@ class Asymmetric:
         setproctitle.setproctitle(f"training-{run_time}")
         
         # Create folder path with "results" and the run time
-        folder_path = os.path.join(save_path, "final" + run_time)
+        if if_final:
+            folder_path = os.path.join(save_path, "final" + run_time)
+        else:
+            folder_path = save_path
+        
+            
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
         
         # Define the full path to the file, including the filename
-        file_path = os.path.join(folder_path, "episodic_return_plot.png")
+        file_path = os.path.join(folder_path, f"episodic_{episode}_return_plot_{run_time}.png")
         
         # Assuming episodic_return_save is a tensor on CUDA (GPU)
         episodic_return_save = episodic_return_save.cpu()  # Move tensor to CPU
@@ -362,10 +367,10 @@ class Asymmetric:
         plt.savefig(file_path)
 
         # Display the plot
-        plt.show()
+        # plt.show()
         
 
-        print(f"Plot saved to: {file_path}")
+        tqdm.write(f"Plot saved to: {file_path}")
                         
     
     
@@ -382,7 +387,7 @@ class Asymmetric:
             os.makedirs(folder_path)
         
         # Define the full path to the file, including the filename
-        file_path = os.path.join(folder_path, "model.pt")
+        file_path = os.path.join(folder_path, f"kappa_o_{self.kappa_o}_kappa_r_{self.kappa_r}_model.pt")
         
         # Save the tensor to the file path
         torch.save(self.policy_para_tensor, file_path)

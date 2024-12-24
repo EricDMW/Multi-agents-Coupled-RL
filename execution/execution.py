@@ -11,6 +11,7 @@
 """
 import sys
 import torch
+import re
 
 
 from pathlib import Path
@@ -49,7 +50,7 @@ class Execution:
         # initialize the environment
         self.env = SyntheticEnv(self.para,self.device)
         
-    def execution(self, file_path, running_step):
+    def execution(self, file_path, running_step, *args):
         
         # set the seed for rep
         set_seed(self.para.rand_seed)
@@ -72,13 +73,37 @@ class Execution:
         print(f"episodic_return is {episodic_return}")
 
 def main():
+    
+    # initialize the execution env
     execute = Execution()
     
     # path of model
-    path_of_model = "/home/dongmingwang/project/coupled_rl/results/final20241222-173316/model.pt"
+    path_of_model = "/home/dongmingwang/project/coupled_rl/results/final20241223-125528/kappa_o_1_kappa_r_1_model.pt"
     
+    # Extract the filename from the path
+    filename = Path(path_of_model).name
+    
+    # Regular expression to extract integer values of kappa_o and kappa_r
+    pattern = r"kappa_o_(\d+)_kappa_r_(\d+)"
+    
+    # Search for the pattern in the filename
+    match = re.search(pattern, filename)
+
+    if match:
+        # Extract values as integers
+        kappa_o = int(match.group(1))
+        kappa_r = int(match.group(2))
+        print(f"kappa_o: {kappa_o}, kappa_r: {kappa_r}")
+        
+        # in case of changing the parameters, update them when using new model
+        execute.para.kappa_o = kappa_o
+        execute.para.kappa_r = kappa_r
+        
+    else:
+        print("Pattern not found in filename.")
+        
     # running steps
-    running_step = 100000
+    running_step = 100
     # execute
     execute.execution(path_of_model,running_step)       
 

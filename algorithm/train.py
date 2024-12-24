@@ -45,15 +45,6 @@ def initialize_para():
     parser = get_config()
     para = parser.parse_args()
     
-    # set the seed
-    if para.fix_seed:
-        try:
-            set_seed(para.rand_seed)
-            # print(f"Seed set to {para.rand_seed} for reproducibility.")
-        except ValueError as e:
-            print(f"Error: {e}")
-    else:
-        print("Seed is not fixed.")
     return device, para
 
 # Function to set the folder name dynamically using the runtime
@@ -86,7 +77,18 @@ def train():
     
     # set the running device
     device, para = initialize_para()
-            
+    
+    ### Choose to set the seed or not
+    # set the seed
+    if para.fix_seed:
+        try:
+            set_seed(para.rand_seed)
+            # print(f"Seed set to {para.rand_seed} for reproducibility.")
+        except ValueError as e:
+            print(f"Error: {e}")
+    else:
+        print("Seed is not fixed.")
+    
     ### buid the environment
     
     # initialize the policy
@@ -148,13 +150,15 @@ def train():
             
         # save the procedure model incase of loss connection    
         if (episode + 1) % para.save_frequency == 0:
-            episodic_save_path = os.path.join(folder_path, f"episode_{episode+1}_tensor.pt")
+            episodic_save_path = os.path.join(folder_path, f"episode_{episode+1}_kappa_o_{policy.kappa_o}_kappa_r_{policy.kappa_r}_tensor.pt")
+            
+            policy.plot_episodic_return(folder_path, episodic_return_save, episode)
             torch.save(policy.policy_para_tensor, episodic_save_path)
             tqdm.write(f"Saved tensor for episode {episode+1} to {episodic_save_path}")    
     
     
     policy.save_model(main_folder,episodic_return_save)
-    policy.plot_episodic_return(main_folder,episodic_return_save)
+    policy.plot_episodic_return(main_folder,episodic_return_save, episode=-1, if_final=True)
     
     
     
