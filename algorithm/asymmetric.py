@@ -12,16 +12,24 @@
 import os
 import torch
 import time
+import matplotlib
 import setproctitle
 
-from tqdm import tqdm
 import matplotlib.pyplot as plt
+
+from tqdm import tqdm
+
 
 class Asymmetric:
     def __init__(self, para, device, *args, **kwargs):
         """
         Constructor for Asymmetric
         """
+        # matplotlib.use('Agg')  # Non-interactive backend
+        # matplotlib.use('TkAgg')  
+        # matplotlib.use('QtAgg')
+        
+        
         ## Initialize class Asymmetric attributes here
         # parameters from parser
         self.device  = device
@@ -73,6 +81,8 @@ class Asymmetric:
             "reward": torch.tensor([], dtype=torch.bool, device=device)  # Empty tensor for reward
         }           
 
+        # initialize the gradient saver to be a 2-d tensor
+        self.episodic_gradient_record = torch.empty(0,device=device)
         
 
     def save_state(self, state):
@@ -119,8 +129,8 @@ class Asymmetric:
             "state": torch.tensor([], dtype=torch.bool, device=self.device),  # Empty tensor for state
             "action": torch.tensor([], dtype=torch.bool, device=self.device),  # Empty tensor for action
             "reward": torch.tensor([], dtype=torch.bool, device=self.device)  # Empty tensor for reward
-        }  
-    
+        }
+        
     
     def update_Q_table(self, step):
         alpha = self.h / (step - 1 + self.t_0)
@@ -256,6 +266,8 @@ class Asymmetric:
         
         eta_m = self.eta / torch.sqrt(torch.tensor(episode + 1, dtype=torch.float32, device=self.device))
 
+        # All zero tensor used for saving the gradient information
+        gradient_saver_at_episode = torch.zeros(self.agents_num,device=self.device)
         
         ### update the the paramters theta, self.policy_para_tensor
         for idx_step in range(self.steps_num):
@@ -288,8 +300,14 @@ class Asymmetric:
                 # update the policy
                 self.policy_para_tensor[theta_update_index] += eta_m * self.gamma**idx_step * self.Q_table_init[Q_index] * policy_para_temp.grad
                 
+                # save the gradient to tensor
+                gradient_saver_at_episode[idx] += torch.norm(self.gamma**idx_step * self.Q_table_init[Q_index] * policy_para_temp.grad)
+        
+        
+        # append current 
+        self.episodic_gradient_record  = eta_m * torch.cat([self.episodic_gradient_record,gradient_saver_at_episode.unsqueeze(0)],dim=0)        
                 
-
+    
     
     
     
@@ -365,6 +383,7 @@ class Asymmetric:
         plt.ylabel('Return')  # Label for the y-axis
         plt.title('Epicodic Return')  # Title of the plot
         plt.savefig(file_path)
+        plt.close()
 
         # Display the plot
         # plt.show()
@@ -374,7 +393,7 @@ class Asymmetric:
                         
     
     
-    def save_model(self, save_path,episodic_return_save):
+    def save_model(self, save_path, episodic_return_save):
         # Get the current runtime (time elapsed since epoch)
         run_time = time.strftime("%Y%m%d-%H%M%S")
         
@@ -382,7 +401,7 @@ class Asymmetric:
         setproctitle.setproctitle(f"training-{run_time}")
         
         # Create folder path with "results" and the run time
-        folder_path = os.path.join(save_path, "final" + run_time)
+        folder_path = os.path.join(save_path, "final" + run_time + f"kappa_o_{self.kappa_o}_kappa_r_{self.kappa_r}")
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
         
@@ -397,4 +416,9 @@ class Asymmetric:
         # Save the tensor to the file path
         torch.save(episodic_return_save, file_path)
 
+        file_path = os.path.join(folder_path, "gradient_over_agents_return.pt")
+        torch.save(self.episodic_gradient_record, file_path)
+        
+        
         tqdm.write(f"Model saved to {file_path}")
+        

@@ -138,7 +138,7 @@ def get_config():
     parser.add_argument(
         "--steps_num",
         type=int,
-        default=int(1e3),
+        default=int(2e3),
         help="lenth of runing steps of each episode"
     )
     
@@ -151,7 +151,7 @@ def get_config():
     parser.add_argument(
         "--save_frequency",
         type=int,
-        default=100,
+        default=200,
         help="save the model during training process"
     )   
     

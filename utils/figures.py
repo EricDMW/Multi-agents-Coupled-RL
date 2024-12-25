@@ -209,7 +209,7 @@ class plot_toolbox:
 
 
 if __name__ == "__main__":
-    
+    '''
     # put all data that form one shadowed curve into one folder
     # put all paths that form one graph with several sahdowed curved to data_path list
     data_path_1 = "/home/dongmingwang/project/coupled_rl/test_func"
@@ -234,6 +234,13 @@ if __name__ == "__main__":
 
     # Plot and save the shadow curve graph
     plot_toolbox.plot_shadow_curve(to_plot[0], to_plot[1])
+    '''
+    
+    data_path_gradient = "/home/dongmingwang/project/coupled_rl/results/final20241224-113741/gradient_over_agents_return.pt"
+    tensor = torch.load(data_path_gradient,map_location="cpu")
+    tensor = plot_toolbox.reshape_to_list(tensor[:,:2])
+    plot_toolbox.plot_shadow_curve(tensor)
+    
 
 
     

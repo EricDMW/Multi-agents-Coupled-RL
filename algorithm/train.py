@@ -48,7 +48,7 @@ def initialize_para():
     return device, para
 
 # Function to set the folder name dynamically using the runtime
-def create_results_folder():
+def create_results_folder(kappa_o,seed):
     # Define the main folder path
     main_folder = "results"
     
@@ -59,11 +59,14 @@ def create_results_folder():
     # Get the current runtime (time elapsed since epoch)
     run_time = time.strftime("%Y%m%d-%H%M%S")
     
+    # Append "para" to run_time
+    run_time_with_para = f"{run_time}_seed_{seed}_kappa_o_{kappa_o}"
+    
     # Set the process title (for display in system)
-    setproctitle.setproctitle(f"training-{run_time}")
+    setproctitle.setproctitle(f"training-{run_time_with_para}")
     
     # Create folder path with "results" and the run time
-    folder_path = os.path.join(main_folder, run_time)
+    folder_path = os.path.join(main_folder, run_time_with_para)
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
     
@@ -105,7 +108,7 @@ def train(seed=1, kappa_o=1):
     
     
     ### Create folder for saving the results
-    folder_path, main_folder = create_results_folder()
+    folder_path, main_folder = create_results_folder(kappa_o,seed)
   
     
     ### Used for record variables
@@ -150,7 +153,10 @@ def train(seed=1, kappa_o=1):
         # record episodic return
         episodic_return_save = torch.cat((episodic_return_save, episodic_return), dim=0)
 
+        # perform the gradient after data collection
         policy.update_policy(episode)
+        
+        
         
         
             
@@ -161,6 +167,9 @@ def train(seed=1, kappa_o=1):
             # path to record the episodic return
             episodic_return_save_path = os.path.join(folder_path, f"episodic_return_episode_{episode+1}_kappa_o_{policy.kappa_o}\
                 _kappa_r_{policy.kappa_r}_seed_{seed}_tensor.pt")
+            episodic__gradient_save_path = os.path.join(folder_path, f"episode_gradient_{episode+1}_kappa_o_{policy.kappa_o}\
+                _kappa_r_{policy.kappa_r}_seed_{seed}_tensor.pt")
+            
             
             # plot current episodic return
             policy.plot_episodic_return(folder_path, episodic_return_save, episode)
@@ -170,6 +179,10 @@ def train(seed=1, kappa_o=1):
             
             # save current episodic return
             torch.save(episodic_return_save, episodic_return_save_path)
+            
+            # save gradient
+            torch.save(policy.episodic_gradient_record,episodic__gradient_save_path)
+            
             tqdm.write(f"Saved tensor for episode {episode+1} to {episodic_save_path}")    
     
     
