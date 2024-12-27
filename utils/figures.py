@@ -15,6 +15,8 @@ import logging
 
 import numpy as np
 import matplotlib.pyplot as plt
+import torch.nn.functional as F
+
 
 from typing import List
 
@@ -205,6 +207,75 @@ class plot_toolbox:
         plt.show(block=False)  # Show the plot without blocking
         plt.pause(5)  # Display the plot for 5 seconds
         plt.close()  # Close the figure window
+    
+    @staticmethod
+    def gaussian_smooth(input_tensor, kernel_size=5, sigma=1.0, normalize=True):
+        """
+        Apply a stable Gaussian smoothing with optional normalization to a tensor.
+        Handles both 1D and 2D tensors, ensuring output matches input dimensionality.
+
+        Args:
+            input_tensor (torch.Tensor): A 1D (n) or 2D (k*n) tensor to smooth.
+            kernel_size (int): Size of the Gaussian kernel. Must be odd.
+            sigma (float): Standard deviation of the Gaussian kernel.
+            normalize (bool): Whether to normalize each row/vector before smoothing.
+
+        Returns:
+            torch.Tensor: The smoothed tensor with the same shape as the input.
+        """
+        is_1d = input_tensor.dim() == 1  # Check if input is 1-dimensional
+        if is_1d:
+            # Convert 1D tensor to 2D for consistent processing
+            input_tensor = input_tensor.unsqueeze(0)
+
+        if input_tensor.dim() != 2:
+            raise ValueError("Input tensor must be 1D or 2D (n or k*n).")
+        
+        k, n = input_tensor.shape
+
+        # Ensure kernel size is odd and smaller than the input dimension
+        kernel_size = min(kernel_size, n)
+        if kernel_size % 2 == 0:
+            kernel_size += 1
+
+        # Normalize each row/vector (optional, based on statistical methods)
+        if normalize:
+            mean = input_tensor.mean(dim=1, keepdim=True)
+            std = input_tensor.std(dim=1, keepdim=True)
+            std[std == 0] = 1  # Prevent division by zero
+            input_tensor = (input_tensor - mean) / std
+
+        # Create a Gaussian kernel
+        x = torch.arange(kernel_size) - kernel_size // 2
+        gaussian_kernel = torch.exp(-0.5 * (x / sigma) ** 2)
+        gaussian_kernel = gaussian_kernel / gaussian_kernel.sum()  # Normalize
+        
+        # Reshape kernel for convolution
+        gaussian_kernel = gaussian_kernel.view(1, 1, -1)
+
+        # Add batch and channel dimensions to the input tensor
+        input_tensor = input_tensor.unsqueeze(1)  # Shape: (k, 1, n)
+        
+        # Pad the input tensor
+        padding = kernel_size // 2
+        input_tensor = F.pad(input_tensor, (padding, padding), mode='reflect')
+        
+        # Ensure the Gaussian kernel matches the input tensor's data type
+        gaussian_kernel = gaussian_kernel.to(input_tensor.dtype)
+        
+        # Perform the convolution
+        smoothed_tensor = F.conv1d(input_tensor, gaussian_kernel, groups=k).squeeze(1)
+        
+        # If normalized, revert the statistical properties
+        if normalize:
+            smoothed_tensor = smoothed_tensor * std + mean
+        
+        # If the input was 1D, return a 1D tensor
+        if is_1d:
+            return smoothed_tensor.squeeze(0)
+        
+        return smoothed_tensor
+
 
 
 
