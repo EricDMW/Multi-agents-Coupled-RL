@@ -65,10 +65,12 @@ class Execution:
         else:
             print("Error: Shape mismatch between existing tensor and loaded tensor.")
             
-        episodic_return = torch.tensor([0],dtype=torch.float32,device=self.device) 
+        episodic_return = torch.tensor([0],dtype=torch.float64,device=self.device) 
         for idx_t in trange(running_step):
             actions = self.policy.get_action(self.env.agent_state)
             rewards = self.env.step(actions)
+            if torch.sum(rewards) != 1:
+                breakpoint()
             episodic_return += self.para.gamma**(idx_t) * torch.sum(rewards)
         print(f"episodic_return is {episodic_return}")
 
@@ -78,7 +80,7 @@ def main():
     execute = Execution()
     
     # path of model
-    path_of_model = "/home/dongmingwang/project/coupled_rl/results/final20241223-125528/kappa_o_1_kappa_r_1_model.pt"
+    path_of_model = "/home/dongmingwang/project/coupled_rl/results/final20241225-105743kappa_o_4_kappa_r_1/kappa_o_4_kappa_r_1_model.pt"
     
     # Extract the filename from the path
     filename = Path(path_of_model).name
@@ -103,7 +105,7 @@ def main():
         print("Pattern not found in filename.")
         
     # running steps
-    running_step = 100
+    running_step = 1000
     # execute
     execute.execution(path_of_model,running_step)       
 

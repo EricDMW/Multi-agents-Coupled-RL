@@ -9,12 +9,18 @@
 @Time   : 20:21:33
 @Info   : Description of the script
 """
-import torch
-import pandas as pd
-import numpy as np
+from utils import ParameterAdjuster
+from config import get_config
 
-import torch
-
-# Create an empty tensor (shape: 0)
-tensor = torch.zeros(7)
-print(tensor[1])
+def main():
+    """
+    Description of the function main.
+    """
+    # Implement function logic here
+    parser = get_config()
+    updated_parser = ParameterAdjuster.adjust_parameters_with_gui(parser, save_path="output_params")
+    
+    print("Done!")
+    
+if __name__ == "__main__":
+    main()

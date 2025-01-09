@@ -337,15 +337,26 @@ class Asymmetric:
     
     def greedy_policy(self,agents_state):
         
-        # initialize an action
+        # Initialize an action
         actions = self.actions_init.clone()
-        
+
         for i in range(self.agents_num):
             policy_logits = self.policy_para_tensor[i]
             
-            # greedy action: only take the action with the greatest chosen probability
-            greedy_action = torch.argmax(policy_logits[agents_state[i].to(torch.int)]).item()
+            # Get the logits for the current agent's state
+            logits_for_state = policy_logits[agents_state[i].to(torch.int)]
+            
+            # Reverse the order of logits to prioritize higher indices for ties
+            reversed_logits = logits_for_state.flip(dims=[0])
+            
+            # Get the greedy action with tie-breaking by larger index
+            greedy_action = torch.argmax(reversed_logits).item()
+            
+            # Correct the index because we flipped the logits
+            greedy_action = len(logits_for_state) - 1 - greedy_action
+            
             actions[i] = bool(greedy_action)
+
         return actions
 
     

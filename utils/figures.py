@@ -205,11 +205,11 @@ class plot_toolbox:
 
         # Show the plot
         plt.show(block=False)  # Show the plot without blocking
-        plt.pause(5)  # Display the plot for 5 seconds
+        plt.pause(5)  # Display the plot for 5 secondstranspose()
         plt.close()  # Close the figure window
     
     @staticmethod
-    def gaussian_smooth(input_tensor, kernel_size=5, sigma=1.0, normalize=True):
+    def gaussian_smooth(input_tensor, kernel_size=5, sigma=0.6, normalize=True):
         """
         Apply a stable Gaussian smoothing with optional normalization to a tensor.
         Handles both 1D and 2D tensors, ensuring output matches input dimensionality.
@@ -275,6 +275,57 @@ class plot_toolbox:
             return smoothed_tensor.squeeze(0)
         
         return smoothed_tensor
+    
+    
+    @staticmethod
+    def plot_tensors_curves(tensors, labels=None):
+        """
+        Plots the curves of a list of 1-dimensional tensors with optional labels.
+
+        Args:
+            tensors (list of torch.Tensor): List of 1D tensors to be plotted.
+            labels (list of str, optional): List of labels for each tensor. If not provided,
+                                            labels will be automatically generated as 't_1', 't_2', ...
+        """
+        # Ensure the input is a list of tensors
+        if not isinstance(tensors, list):
+            raise ValueError("Input 'tensors' must be a list of torch.Tensor.")
+        
+        # Check if all elements in tensors are torch.Tensor objects
+        if not all(isinstance(t, torch.Tensor) for t in tensors):
+            raise ValueError("All elements in the 'tensors' list must be of type torch.Tensor.")
+        
+        # Handle cases where tensors list is empty
+        if not tensors:
+            raise ValueError("The 'tensors' list is empty. Please provide tensors to plot.")
+        
+        # If labels are not provided, generate default labels like 't_1', 't_2', ...
+        if labels is None:
+            labels = [f't_{i+1}' for i in range(len(tensors))]
+        
+        # Ensure the number of labels matches the number of tensors
+        if len(labels) != len(tensors):
+            raise ValueError("The number of labels must match the number of tensors.")
+        
+        # Plot each tensor
+        for i, tensor in enumerate(tensors):
+            # Check if the tensor is 1-dimensional
+            if tensor.ndimension() != 1:
+                raise ValueError(f"Tensor at index {i} is not 1-dimensional.")
+            
+            # Plot the tensor and label it
+            plt.plot(tensor.numpy(), label=labels[i])
+        
+        # Add labels and a title
+        plt.xlabel('Index')
+        plt.ylabel('Value')
+        plt.title('Curves of Tensors')
+        plt.legend()
+
+        # Show the plot
+        plt.show()
+
+
 
 
 
@@ -307,10 +358,19 @@ if __name__ == "__main__":
     plot_toolbox.plot_shadow_curve(to_plot[0], to_plot[1])
     '''
     
+    '''
     data_path_gradient = "/home/dongmingwang/project/coupled_rl/results/final20241224-113741/gradient_over_agents_return.pt"
     tensor = torch.load(data_path_gradient,map_location="cpu")
     tensor = plot_toolbox.reshape_to_list(tensor[:,:2])
     plot_toolbox.plot_shadow_curve(tensor)
+    '''
+    
+    
+    # Example usage:
+    tensors = [torch.randn(10), torch.randn(10), torch.randn(10)]  # Replace with your actual tensors
+    # Optional, can be omitted to use default labels
+    plot_toolbox.plot_tensors_curves(tensors)
+
     
 
 

@@ -1,0 +1,19 @@
+{
+    "env_name": "Synthetic",
+    "is_training": true,
+    "agents_num": 12,
+    "trans_prob": 0.8,
+    "state_space_size": 2,
+    "action_space_size": 2,
+    "gamma": 0.8,
+    "kappa_o": 1,
+    "kappa_r": 1,
+    "rand_seed": 1,
+    "fix_seed": true,
+    "h": 2.0,
+    "eta": 2.0,
+    "t_0": 5,
+    "steps_num": 2000,
+    "episode_num": 1000,
+    "save_frequency": 200
+}
